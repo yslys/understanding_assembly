@@ -233,7 +233,6 @@ What is the take away? C is very low level, and C trusts programmers that they w
 
 How your linker gets confused:
 
-+ Makefile is the file that defines the order of compilation and linking. 
 + The linker scans files in the order they appear on the command line. 
 + The linker keeps track of
 	+ E: the set of relocatable object files that will be merged
@@ -242,7 +241,7 @@ How your linker gets confused:
 + Object files from archives are only added to E if they contain symbols from U.
 	+ When they get added, the whole object file gets added.
 
-
+See the following Makefile example:
 ```
 (CCOPTS) = gcc -fno-pie -no-pie
 
@@ -259,12 +258,49 @@ libsum.a: sum.o
 	ranlib libsum.a
 
 main_broken: libsum.a main.c
-	$(CCOPTS) -L. -lsum -o main main.c
+	$(CCOPTS) -L. -lsum main.c -o main
 
 main_fixed: libsum.a main.c
-	$(CCOPTS) main.c -L. -o main -lsum
+	$(CCOPTS) main.c -L. -lsum -o main
 ```
 
-See an example of a Makefile.
+The background of this Makefile is - in ```main.c```, it references a function
+defined in ```sum.c```. In order to compile the main program, we can execute
+the first rule, i.e. ```make main```, where we compile ```main.c```, then
+```sum.c```, then finally turn ```main.o``` into an executable.
 
+There is another way of doing that, by making ```sum``` into a library. Then,
+compile main.c specifying the library to be linked while compiling. Here we 
+compile the ```sum.c``` file into a library - ```libsum.a```, such 
+library will be linked later when compiling the final executable ```main```.
+
+There are two rules: ```main_broken``` and ```main_fixed```. The first one will 
+generate an error while linking, while the latter one will not. The only 
+difference between the two is the order of ```-L. -lsum``` and ```main.c```.
+
+As the linker goes through each file (.o, .a), it will pick up references 
+(symbols that need to be resolved),  When in later files the linker finds the
+definition of the symbol that needs to be resolved, it will disambiguate them
+one by one. However, **it only goes through once, and it does not remember 
+anything if it is not a reference that needs to be resolved.**
+
+Hence, for the rule ```main_broken```, it goes through the libsum first, but
+since the symbol in main.c has not been recognized by the linker, the linker
+will basically ignore all functions in libsum, which will result in an error
+when it comes to main.c. 
+
+That is why we need to go through main.c first, turn it into main.o, which has
+```.rel.text``` section that contains the symbol of ```sum()``` defined in 
+libsum. Next, the linker will go through the libsum and find the definition of
+```sum()```, which will not generate an error.
+
+What has been covered?
++ How do we resolve symbols?
+	+ Depends on binding
+	+ Depends on strong/weak
+	+ Can easily mess up
+
++ What's next?
+	+ Fix references to symbols
+	+ Then we will have machine code with references to start executing code.
 
