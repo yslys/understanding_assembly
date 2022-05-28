@@ -173,6 +173,9 @@ What's next?
 
 
 ### How do linkers resolve symbols?
+
+[Video source](https://www.youtube.com/watch?v=6XVUIeAaROU&list=PLhy9gU5W1fvUND_5mdpbNVHC1WCIaABbP&index=10)
+
 + What is a symbol?
 	+ Anything with a global or module level name.
 		+ Functions.
@@ -303,4 +306,107 @@ What has been covered?
 + What's next?
 	+ Fix references to symbols
 	+ Then we will have machine code with references to start executing code.
+
+
+
+
+### Linux Executable Symbol Relocation Explained
+
+[Video Source](https://www.youtube.com/watch?v=E804eTETaQs&list=PLhy9gU5W1fvUND_5mdpbNVHC1WCIaABbP&index=12)
+
+Recall that symbol resolution is: finding a single definition for each symbol. 
+In this section, we are learning what is symbol relocation.
+
+> Symbol relocation is: Updating each reference to a symbol with the runtime address of definition.
+
+Before we start, let's review the process of how a piece of code is translated
+to a runnable executable.
+
+```
+Programmer written code
+	  ↓
+    Preprocessor
+          | Code with macros expanded,
+	  ↓ inlined files
+      Compiler
+          ↓ Assembly code (.s)
+      Assembler
+          ↓ Machine code (.o)
+	Linker
+	  | Symbol resolution
+	  | Merge the sections from multiple object files together
+	  ↓ Symbol relocation
+      Executable
+```
+
+From the process above, we can see where **symbol resolution** comes in place.
+
+Why we need a ```main()``` for each executable?
+
+Suppose we have two object files, main.o (```main()```) and sum.o (```sum()```), 
+after the linker tries to merge them into an executable object file, the new 
+file contains a larger ```.text``` section that not only contains ```main()```
+and ```sum()```, but also contains system code. System code contains ```_start```
+that GCC puts there by default. If you compile a program without main function,
+you will get an error saying it could not find the symbol main. The reason is,
+in the ```_start``` section, it does a lot of bookkeeping to initialize the
+entire executable, and then it calls ```main``` - that is what makes ```main```
+a symbol. Hence, ```main``` is nothing special compared to other functions like
+```sum()``` except that it is called in ```_start``` section by default.
+
+
+
+
+
+### Dynamic Linking
+[Video](https://www.youtube.com/watch?v=l8oIupRzahU&list=PLhy9gU5W1fvUND_5mdpbNVHC1WCIaABbP&index=13)
+
+
++ Differences between static linking and dynamic linking
+	+ Static linking
+		+ Link everything at build time: globals, functions
+			+ Results in one big happy executable
+	+ Dynamic linking
+		+ Keep libraries in different files
+			+ Link global variables at load time
+			+ Link library functions at invocation time
+
+
+
+
+
+
+## Useful links
++ [Process address space (ppt)](https://students.mimuw.edu.pl/ZSO/Wyklady/04_processes2/processAddressSpace.pdf)
++ [Limits on resources in Linux](https://0xax.gitbooks.io/linux-insides/content/SysCall/linux-syscall-6.html)
++ [Set of useful articles about Linux](https://manybutfinite.com/category/software-illustrated/)
++ [LWN: How programs get run (Part 1)](https://lwn.net/Articles/630727/)
++ [LWN: How programs get run: ELF binaries (Part 2)](https://lwn.net/Articles/631631/)
++ [ELF explained (Chinese version)](https://zhuanlan.zhihu.com/p/286088470)
++ [Understanding the ELF](https://medium.com/@MrJamesFisher/understanding-the-elf-4bd60daac571)
++ [Video: In-depth: ELF - The Extensible & Linkable Format](https://www.youtube.com/watch?v=nC1U1LJQL8o)
++ [Video: Advanced Programming in the UNIX Environment: Week 11, Segment 1 - The Executable & Linkable Format](https://www.youtube.com/watch?v=i1UDF05iZPU)
++ [Video: continued](https://www.youtube.com/playlist?list=PL0qfF8MrJ-jyMELnWWSmW_FFPaItbPmJT)
++ [Load-time relocation of shared libraries](https://eli.thegreenplace.net/2011/08/25/load-time-relocation-of-shared-libraries/)
++ [Position Independent Code (PIC) in shared libraries](https://eli.thegreenplace.net/2011/11/03/position-independent-code-pic-in-shared-libraries/)
++ [进程内存管理初探](https://blog.csdn.net/feelabclihu/article/details/106726648)
++ [Understanding the ELF File Format](https://linuxhint.com/understanding_elf_file_format/)
++ [Linux-insides: linkers](https://0xax.gitbooks.io/linux-insides/content/Misc/linux-misc-3.html)
++ [Linux-insides: How does the Linux kernel run a program](https://0xax.gitbooks.io/linux-insides/content/SysCall/linux-syscall-4.html)
++ [Program Loading and Memory Mapping in Linux](https://www.bodunhu.com/blog/posts/program-loading-and-memory-mapping-in-linux/)
++ [ELF文件的加载过程(load_elf_binary函数详解)--Linux进程的管理与调度（十三）](https://blog.csdn.net/gatieme/article/details/51628257)
++ [ELF加载器的原理与实现](https://zhuanlan.zhihu.com/p/401446080)
++ [ELF文件加载过程](https://zhuanlan.zhihu.com/p/287863861)
++ [find_vma()](http://books.gigatux.nl/mirror/kerneldevelopment/0672327201/ch14lev1sec3.html)
++ [Operating System Error Codes](https://mariadb.com/kb/en/operating-system-error-codes/)
++ [Video: Linker Example - How the linker combines object files.](https://www.youtube.com/watch?v=oXk87NRTL1Y)
++ [Video: Static and Dynamic Linking using GCC for Linux](https://www.youtube.com/watch?v=UdMRcJwvWIY)
++ [How does C++ linking work in practice?](https://stackoverflow.com/questions/12122446/how-does-c-linking-work-in-practice)
++ [Videos: Intro to X86 assembly language](https://www.youtube.com/playlist?list=PLmxT2pVYo5LB5EzTPZGfFN0c2GDiSXgQe)
++ [The 101 of ELF files on Linux: Understanding and Analysis](https://linux-audit.com/elf-binaries-on-linux-understanding-and-analysis/)
++ [Linking on Linux x86–64 Machines](https://medium.com/@mahmoudabdalghany/linking-on-linux-x86-64-machines-933a17419ceb)
++ [Linux Executable Symbol Relocation Explained (and a series of videos)](https://www.youtube.com/watch?v=E804eTETaQs&list=PLhy9gU5W1fvUND_5mdpbNVHC1WCIaABbP&index=12)
++ [完全剖析 - Linux虚拟内存空间管理](https://jishuin.proginn.com/p/763bfbd59739)
+
+
 
